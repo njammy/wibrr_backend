@@ -43,6 +43,9 @@ exports.productController = void 0;
 var axios_1 = __importDefault(require("axios"));
 var express_1 = __importDefault(require("express"));
 var cheerio_1 = __importDefault(require("cheerio"));
+var CyclicDb = require("cyclic-dynamodb");
+var db = CyclicDb("alive-crown-yakCyclicDB");
+var researchTerm = db.collection("researchTerm");
 exports.productController = express_1.default.Router();
 exports.productController.post("/izi", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
@@ -84,42 +87,62 @@ function getWebSiteData(url) {
     });
 }
 function getIziwayProduct(keyWord_arg) {
-    var products_iziway = [];
-    var urlReq = 'https://iziway.cm/search?q=wibrrrword&pagesize=100';
-    var str = keyWord_arg.replace(' ', '+');
-    urlReq = urlReq.replace('wibrrrword', str);
-    return getWebSiteData(urlReq).then(function (data) {
-        var $ = cheerio_1.default.load(data);
-        var productListTag = $('.product-grid-list').children();
-        productListTag.each(function (index, element) {
-            var product = {
-                name: $(element).find('.c-product-content > p > a').text(),
-                price: $(element).find('.c-product-content > div > span ').first().text().replace('FCFA', ''),
-                oldprice: $(element).find('.c-product-content > div > span > del ').text().replace('FCFA', ''),
-                link: 'https://iziway.cm/' + $(element).find('.c-product-img > a ').attr('href')
-            };
-            index % 2 == 0 ? products_iziway.push(product) : null;
+    return __awaiter(this, void 0, void 0, function () {
+        var leo, products_iziway, urlReq, str;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, researchTerm.set(keyWord_arg, { type: "iziway" })];
+                case 1:
+                    leo = _a.sent();
+                    products_iziway = [];
+                    urlReq = 'https://iziway.cm/search?q=wibrrrword&pagesize=100';
+                    str = keyWord_arg.replace(' ', '+');
+                    urlReq = urlReq.replace('wibrrrword', str);
+                    return [2 /*return*/, getWebSiteData(urlReq).then(function (data) {
+                            var $ = cheerio_1.default.load(data);
+                            var productListTag = $('.product-grid-list').children();
+                            productListTag.each(function (index, element) {
+                                var product = {
+                                    name: $(element).find('.c-product-content > p > a').text(),
+                                    price: $(element).find('.c-product-content > div > span ').first().text().replace('FCFA', ''),
+                                    oldprice: $(element).find('.c-product-content > div > span > del ').text().replace('FCFA', ''),
+                                    link: 'https://iziway.cm/' + $(element).find('.c-product-img > a ').attr('href')
+                                };
+                                index % 2 == 0 ? products_iziway.push(product) : null;
+                            });
+                            return products_iziway;
+                        })];
+            }
         });
-        return products_iziway;
     });
 }
 function getGloProduct(keyWord_arg) {
-    var products_glo = [];
-    var urlReq = "https://glotelho.cm/fr/search/wibrrrword?product_list_limit=all";
-    var str = keyWord_arg.replace(' ', '%20');
-    urlReq = urlReq.replace('wibrrrword', str);
-    return getWebSiteData(urlReq).then(function (data) {
-        var $ = cheerio_1.default.load(data);
-        var productListTag = $('.products-grid > ol').children();
-        productListTag.each(function (index, element) {
-            var product = {
-                name: $(element).find('.product-item-info > .item-inner > .product-item-details > .product-name > a').text(),
-                price: $(element).find('.product-item-info > .item-inner > .product-item-details > .price-box > .special-price > .price-container > .price-wrapper  > .price > .currency > .currency-amount').text(),
-                oldprice: $($(element).find('.product-item-info > .item-inner > .product-item-details > .price-box > .old-price > .price-container').last()).find('.price > .currency > .currency-amount').text(),
-                link: '' + $(element).find('.product-item-info > .item-inner > .product-item-details > .product-name > a').attr('href')
-            };
-            products_glo.push(product);
+    return __awaiter(this, void 0, void 0, function () {
+        var leo, products_glo, urlReq, str;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, researchTerm.set(keyWord_arg, { type: "glo" })];
+                case 1:
+                    leo = _a.sent();
+                    products_glo = [];
+                    urlReq = "https://glotelho.cm/fr/search/wibrrrword?product_list_limit=all";
+                    str = keyWord_arg.replace(' ', '%20');
+                    urlReq = urlReq.replace('wibrrrword', str);
+                    return [2 /*return*/, getWebSiteData(urlReq).then(function (data) {
+                            var $ = cheerio_1.default.load(data);
+                            var productListTag = $('.products-grid > ol').children();
+                            productListTag.each(function (index, element) {
+                                var product = {
+                                    name: $(element).find('.product-item-info > .item-inner > .product-item-details > .product-name > a').text(),
+                                    price: $(element).find('.product-item-info > .item-inner > .product-item-details > .price-box > .special-price > .price-container > .price-wrapper  > .price > .currency > .currency-amount').text(),
+                                    oldprice: $($(element).find('.product-item-info > .item-inner > .product-item-details > .price-box > .old-price > .price-container').last()).find('.price > .currency > .currency-amount').text(),
+                                    link: '' + $(element).find('.product-item-info > .item-inner > .product-item-details > .product-name > a').attr('href')
+                                };
+                                products_glo.push(product);
+                            });
+                            return products_glo;
+                        })];
+            }
         });
-        return products_glo;
     });
 }
